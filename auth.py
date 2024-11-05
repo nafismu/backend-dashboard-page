@@ -1,8 +1,9 @@
 # routes/auth.py
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import create_access_token
-from models.users import User
-from sqlalchemy.exc import SQLAlchemyError
+from models.users import User,db
+from sqlalchemy.exc import SQLAlchemyError,IntegrityError
+from werkzeug.security import generate_password_hash
 from utils.decorators import role_required
 
 auth = Blueprint('auth', __name__)
@@ -47,3 +48,30 @@ def admin_dashboard():
 @role_required('employee')
 def employee_dashboard():
     return jsonify({"msg": "Welcome to the Employee Dashboard!"})
+
+@auth.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    role = data.get('role')
+
+    # Check if all fields are provided
+    if not username or not password or not role:
+        return jsonify({'message': 'Missing required fields'}), 400
+
+    # Hash the password
+    hashed_password = generate_password_hash(password)
+
+    # Create new user
+    new_user = User(username=username, password_hash=hashed_password, role=role)
+
+    try:
+        db.session.add(new_user)
+        db.session.commit()
+        return jsonify({'message': 'User registered successfully'}), 201
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({'message': 'Username already exists'}), 409
+    except Exception as e:
+        return jsonify({'message': 'An error occurred during registration'}), 500

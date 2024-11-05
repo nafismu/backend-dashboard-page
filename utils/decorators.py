@@ -8,7 +8,7 @@ def role_required(required_role):
     def decorator(fn):
         @wraps(fn)
         @jwt_required()
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs):            
             user_id = get_jwt_identity()
             user = User.query.get(user_id)
 

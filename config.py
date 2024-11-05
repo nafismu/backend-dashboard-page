@@ -3,11 +3,9 @@ import os
 
 # Generate JWT_SECRET_KEY
 JWT_SECRET_KEY = os.urandom(24).hex()
-print(f"JWT Secret Key: {JWT_SECRET_KEY}")
 
 # Generate SECRET_KEY untuk Flask
 SECRET_KEY = os.urandom(24).hex()
-print(f"Flask Secret Key: {SECRET_KEY}")
 
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "supersecretkey")

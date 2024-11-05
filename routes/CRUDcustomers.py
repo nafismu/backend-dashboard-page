@@ -6,6 +6,7 @@ from flask_cors import cross_origin
 from models.customers import Customer
 from models import db
 from datetime import datetime
+from sqlalchemy import func
 
 inputCustomers_blueprint = Blueprint('CRUDcustomers', __name__)
 
@@ -19,7 +20,7 @@ def create_customer():
             email=data.get('email'),
             phone=data.get('phone'),
             subscription=data.get('subscription'),
-            signup_date=datetime.strptime(data.get('signup_date'), '%Y-%m-%d')
+            signup_date=datetime.strptime(data.get('signup_date'),'%Y-%m-%dT%H:%M')
         )
         db.session.add(new_customer)
         db.session.commit()
@@ -49,7 +50,9 @@ def update_customer(id):
     customer.email = data.get('email')
     customer.phone = data.get('phone')
     customer.subscription = data.get('subscription')
-    customer.signup_date = datetime.strptime(data.get('signup_date'), '%Y-%m-%d')
+    signup_date_str = data.get('signup_date')
+    if signup_date_str:
+        customer.signup_date = datetime.strptime(signup_date_str, '%Y-%m-%dT%H:%M')
 
     db.session.commit()
 
@@ -65,8 +68,23 @@ def delete_customer(id):
     return jsonify({'message': 'Customer deleted successfully!'}), 200
 
 
-@inputCustomers_blueprint.route('/customercount', methods=['GET'])
+@inputCustomers_blueprint.route('/customer-count', methods=['GET'])
 def get_total_customer_count():
     # Customer = Customer.query.all()
     customer_count = Customer.query.count()
-    return jsonify({"count": customer_count}), 200
+    return jsonify({"total_customers": customer_count}), 200
+
+# Endpoint untuk new customers (bulan ini)
+@inputCustomers_blueprint.route('/new-customers', methods=['GET'])
+def new_customers():
+    current_month = datetime.now().strftime('%Y-%m')
+    new_customers_count = db.session.query(Customer).filter(
+        func.strftime('%Y-%m', Customer.signup_date) == current_month
+    ).count()
+    return jsonify({"new_customers": new_customers_count})
+
+# Endpoint untuk returning customers
+@inputCustomers_blueprint.route('/customers-return', methods=['GET'])
+def returning_customers():
+    returning_customers_count = db.session.query(Customer.email).group_by(Customer.email).having(func.count(Customer.email) > 1).count()
+    return jsonify({"returning_customers": returning_customers_count})
