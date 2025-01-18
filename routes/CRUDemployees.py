@@ -2,6 +2,7 @@
 from flask import Blueprint, jsonify, request
 from flask_cors import cross_origin
 from models.employees import Employee
+from models.users import User
 from models import db
 
 inputEmployees_blueprint = Blueprint('CRUDemployees', __name__)
@@ -27,15 +28,15 @@ def create_employee():
 # Read (Fetch all employees)
 @inputEmployees_blueprint.route('/', methods=['GET'])
 def get_employees():
-    employees = Employee.query.all()
-    employees_list = [{'id': e.id, 'name': e.name, 'phone': e.phone , 'email': e.email, 'address': e.address, 'position': e.position} for e in employees]
+    employees = Employee.query.join(User, Employee.employee_id == User.id).all()
+    employees_list = [{'id': e.id, 'employee_id': e.employee_id, 'phone': e.phone , 'email': e.email, 'address': e.address, 'position': e.position} for e  in employees]
     return jsonify(employees_list), 200
 
 # Read (Fetch single employee by ID)
 @inputEmployees_blueprint.route('/<int:id>', methods=['GET'])
 def get_employee(id):
     employee = Employee.query.get_or_404(id)
-    return jsonify({'id': employee.id, 'name': employee.name, 'phone': employee.phone, 'email': employee.email, 'address': employee.address, 'position': employee.position}), 200
+    return jsonify({'id': employee.id, 'employee_id': employee.employee_id, 'phone': employee.phone, 'email': employee.email, 'address': employee.address, 'position': employee.position}), 200
 
 # Update (Modify existing employee by ID)
 @inputEmployees_blueprint.route('/<int:id>', methods=['PUT'])

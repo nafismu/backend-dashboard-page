@@ -48,45 +48,8 @@ def sales_prediction():
 #     conn.row_factory = sqlite3.Row  # Ini mengembalikan hasil sebagai dict
 #     return conn
 
-# # Endpoint untuk menampilkan data yang difilter dan diurutkan dari tabel salesPerformance
-# @app.route('/sales-performance', methods=['GET'])
-# def get_sales_performance():
-#     # Mengambil parameter dari query string
-#     funnel = request.args.get('funnel')  # Misal "f0", "f1", dll.
-#     start_date = request.args.get('start_date')
-#     end_date = request.args.get('end_date')
-#     sort_key = request.args.get('sort_key')  # Kolom yang digunakan untuk sorting
-#     sort_direction = request.args.get('sort_direction', 'ascending')  # Default ascending
-
-#     conn = connect_db()
-#     cursor = conn.cursor()
-
-#     # Base query
-#     query = "SELECT * FROM salesPerformance WHERE 1=1"
-#     params = []
-
-#     # Filter berdasarkan funnel
-#     if funnel:
-#         query += f" AND {funnel} > 0"  # Misalkan funnel bernilai > 0 jika aktif
-
-#     # Filter berdasarkan rentang tanggal
-#     if start_date:
-#         query += " AND tanggal >= ?"
-#         params.append(start_date)
-#     if end_date:
-#         query += " AND tanggal <= ?"
-#         params.append(end_date)
-
-#     # Sorting berdasarkan kolom yang dipilih
-#     if sort_key:
-#         query += f" ORDER BY {sort_key} {'ASC' if sort_direction == 'ascending' else 'DESC'}"
-
-#     # Jalankan query
-#     cursor.execute(query, params)
-#     rows = cursor.fetchall()
-
-#     # Ubah hasil query menjadi list of dicts
-#     sales_performance = [dict(row) for row in rows]
-
-#     conn.close()
-#     return jsonify(sales_performance)
+@salesPerformance_blueprint.route('/compare', methods=['POST'])
+def compare_sales():
+    data = salesPerformance.query.all()
+    salesPerformance_list = [{'mitra': c.mitra, 'namaSA': c.namaSA, 'sph': c.sph, 'f0': c.f0, 'f1': c.f1, 'f2': c.f2, 'f3': c.f3, 'f4': c.f4, 'f5': c.f5, 'tanggal': c.tanggal} for c in data]
+    

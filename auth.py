@@ -1,13 +1,19 @@
-# routes/auth.py
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import create_access_token
-from models.users import User,db
-from sqlalchemy.exc import SQLAlchemyError,IntegrityError
+from flask_jwt_extended import (
+    create_access_token, 
+    create_refresh_token, 
+    jwt_required, 
+    get_jwt_identity
+)
+from models.users import User, db
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from werkzeug.security import generate_password_hash
 from utils.decorators import role_required
+from datetime import timedelta
 
 auth = Blueprint('auth', __name__)
 
+# Login endpoint dengan refresh token
 @auth.route('/login', methods=['POST'])
 def login():
     try:
@@ -22,18 +28,42 @@ def login():
         if not user or not user.check_password(password):
             return jsonify({"msg": "Invalid credentials"}), 401
 
-        # Buat access token dengan ID user sebagai identity
-        access_token = create_access_token(identity=user.id)
+        # Generate access dan refresh token
+        access_token = create_access_token(
+            identity={"id": user.id, "role": user.role}, 
+            expires_delta=timedelta(hours=1)  # Kedaluwarsa 1 jam
+        )
+        refresh_token = create_refresh_token(
+            identity={"id": user.id, "role": user.role}, 
+            expires_delta=timedelta(days=7)  # Kedaluwarsa 7 hari
+        )
 
-        # Cek role user (admin atau employee)
         return jsonify({
             "access_token": access_token,
+            "refresh_token": refresh_token,
             "role": user.role  # Kembalikan role user dalam response
         }), 200
 
     except SQLAlchemyError as e:
-        # Handle error dari database
         return jsonify({"msg": "Database error", "error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"msg": "Something went wrong", "error": str(e)}), 500
+
+# Endpoint untuk refresh token
+@auth.route('/refresh', methods=['POST'])
+@jwt_required(refresh=True)  # Hanya menerima refresh token
+def refresh_token():
+    try:
+        # Ambil data user dari refresh token
+        current_user = get_jwt_identity()
+
+        # Generate access token baru
+        new_access_token = create_access_token(
+            identity=current_user, 
+            expires_delta=timedelta(hours=1)
+        )
+
+        return jsonify({"access_token": new_access_token}), 200
     except Exception as e:
         return jsonify({"msg": "Something went wrong", "error": str(e)}), 500
 
@@ -48,7 +78,10 @@ def admin_dashboard():
 @role_required('employee')
 def employee_dashboard():
     return jsonify({"msg": "Welcome to the Employee Dashboard!"})
+# def fetch_user_by_id(user_id):
+#     return User.query.get(user_id)
 
+# Endpoint untuk registrasi user
 @auth.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -56,14 +89,11 @@ def register():
     password = data.get('password')
     role = data.get('role')
 
-    # Check if all fields are provided
     if not username or not password or not role:
         return jsonify({'message': 'Missing required fields'}), 400
 
-    # Hash the password
     hashed_password = generate_password_hash(password)
 
-    # Create new user
     new_user = User(username=username, password_hash=hashed_password, role=role)
 
     try:
