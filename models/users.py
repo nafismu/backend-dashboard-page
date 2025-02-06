@@ -12,6 +12,7 @@ class User(db.Model):
     role = db.Column(db.String(100), nullable=False)  # 'admin' or 'employee'
     
     # employees = relationship("Employee", back_populates="user")
+    # attendance = relationship("Attendance", back_populates="user")
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 

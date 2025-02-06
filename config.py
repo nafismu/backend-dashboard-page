@@ -15,3 +15,5 @@ class Config:
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "jwtsecretkey")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)  # Kedaluwarsa access token
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=7)  # Kedaluwarsa refresh token
+    MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # Maksimal 10 MB
+    ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])

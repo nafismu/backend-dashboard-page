@@ -9,7 +9,4 @@ def get_total_customer_count():
     customer_count = Customer.query.count()
     return jsonify({"count": customer_count}), 200
 
-# @app.route('/', methods=['GET'])
-# def get_customer_count():
-#     customer_count = Customer.query.count()
-#     return jsonify({"count": customer_count})
+
