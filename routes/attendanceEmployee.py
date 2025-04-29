@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify,Blueprint
 from flask_cors import cross_origin
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
 from config import Config
 # import face_recognition
 import numpy as np
@@ -23,8 +22,6 @@ UPLOAD_FOLDER = "./uploads/profile_pictures/"
 TEMP_UPLOAD_FOLDER = "./uploads/profile_pictures/temp"
 # Configuration
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
-
-locale.setlocale(locale.LC_TIME, 'id_ID.UTF-8')
 
 recognizer = eigenface.EigenfaceRecognizer()
 attendanceEmployee_blueprint = Blueprint('attendanceEmployee', __name__)

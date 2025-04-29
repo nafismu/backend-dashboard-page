@@ -2,7 +2,6 @@ from flask import Blueprint, jsonify
 import datetime
 import locale
 
-locale.setlocale(locale.LC_TIME, 'id_ID.UTF-8')
 
 date_blueprint = Blueprint('date', __name__)
 

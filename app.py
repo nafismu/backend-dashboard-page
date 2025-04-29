@@ -3,7 +3,7 @@ from flask_jwt_extended import JWTManager
 from models import db
 from auth import auth
 from config import Config
-from flask_cors import CORS
+# from flask_cors import CORS
 
 from routes.CRUDcustomers import inputCustomers_blueprint
 from routes.customers import customers_blueprint
@@ -17,6 +17,8 @@ from routes.Inputsales import Salesinput_blueprint
 from routes.attendanceEmployee import attendanceEmployee_blueprint
 from routes.userID import user_id_blueprint
 from routes.Date import date_blueprint
+from flask_cors import CORS
+
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -42,4 +44,4 @@ with app.app_context():
     db.create_all()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
